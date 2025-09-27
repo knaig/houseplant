@@ -58,9 +58,24 @@ function ClaimPageContent() {
   useEffect(() => {
     // Load species data
     fetch('/api/species')
-      .then(res => res.json())
-      .then(data => setSpecies(data))
-      .catch(err => console.error('Failed to load species:', err))
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to load species: ${res.status} ${res.statusText}`)
+        }
+        return res.json()
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setSpecies(data)
+        } else {
+          console.error('Invalid species data format:', data)
+          setSpecies([])
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load species:', err)
+        setSpecies([]) // Set empty array to prevent form from being completely broken
+      })
   }, [])
   
   // Get selected species for name suggestions
@@ -283,11 +298,17 @@ function ClaimPageContent() {
                     <SelectValue placeholder="Select your plant species" />
                   </SelectTrigger>
                   <SelectContent>
-                    {species.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.commonName} {s.latinName && `(${s.latinName})`}
+                    {species.length > 0 ? (
+                      species.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.commonName} {s.latinName && `(${s.latinName})`}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-species" disabled>
+                        No species available - please refresh the page
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-gray-500">This helps us determine the right watering schedule for your plant.</p>
@@ -401,7 +422,11 @@ function ClaimPageContent() {
                 </p>
               </div>
               
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading || species.length === 0 || !formData.speciesId || !formData.name.trim()}
+              >
                 {loading ? 'Claiming Plant...' : 'Claim My Plant 🌱'}
               </Button>
             </form>

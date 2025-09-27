@@ -1,0 +1,75 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to Clerk keyless mode content" [ref=e2] [cursor=pointer]:
+    - /url: "#--clerk-keyless-prompt-button"
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]: 🌱
+      - heading "Join Plant Care" [level=1] [ref=e8]
+      - paragraph [ref=e9]: Create your account to start receiving WhatsApp messages from your plants
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e14]:
+          - heading "Create your account" [level=1] [ref=e15]
+          - paragraph [ref=e16]: Welcome! Please fill in the details to get started.
+        - generic [ref=e17]:
+          - button "Sign in with Google Continue with Google" [ref=e20] [cursor=pointer]:
+            - generic [ref=e21] [cursor=pointer]:
+              - img "Sign in with Google" [ref=e23] [cursor=pointer]
+              - generic [ref=e24] [cursor=pointer]: Continue with Google
+          - paragraph [ref=e27]: or
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - generic [ref=e31]:
+                - generic [ref=e33]:
+                  - generic [ref=e34]:
+                    - generic [ref=e35]: First name
+                    - generic [ref=e36]: Optional
+                  - textbox "First name" [ref=e37]
+                - generic [ref=e39]:
+                  - generic [ref=e40]:
+                    - generic [ref=e41]: Last name
+                    - generic [ref=e42]: Optional
+                  - textbox "Last name" [ref=e43]
+              - generic [ref=e46]:
+                - generic [ref=e48]: Email address
+                - textbox "Email address" [ref=e49]
+              - generic [ref=e52]:
+                - generic [ref=e54]: Password
+                - generic [ref=e55]:
+                  - textbox "Password" [ref=e56]
+                  - button "Show password" [ref=e57] [cursor=pointer]:
+                    - img [ref=e58] [cursor=pointer]
+            - button "Continue" [ref=e63] [cursor=pointer]:
+              - generic [ref=e64] [cursor=pointer]:
+                - text: Continue
+                - img [ref=e65] [cursor=pointer]
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e69]: Already have an account?
+          - link "Sign in" [ref=e70] [cursor=pointer]:
+            - /url: http://localhost:3000/sign-in
+        - generic [ref=e72]:
+          - generic [ref=e74]:
+            - paragraph [ref=e75]: Secured by
+            - link "Clerk logo" [ref=e76] [cursor=pointer]:
+              - /url: https://go.clerk.com/components
+              - img [ref=e77] [cursor=pointer]
+          - paragraph [ref=e82]: Development mode
+    - paragraph [ref=e84]:
+      - text: Already have an account?
+      - link "Sign in" [ref=e85] [cursor=pointer]:
+        - /url: /sign-in
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e91] [cursor=pointer]:
+    - img [ref=e92] [cursor=pointer]
+  - alert [ref=e95]
+  - button "Clerk is in keyless mode" [ref=e97]:
+    - generic [ref=e98]:
+      - generic [ref=e99]:
+        - img [ref=e101]
+        - img [ref=e107]
+      - paragraph [ref=e109] [cursor=pointer]: Clerk is in keyless mode
+```

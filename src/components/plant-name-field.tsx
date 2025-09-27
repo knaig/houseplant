@@ -53,9 +53,14 @@ export function PlantNameField({
         if (response.ok) {
           const data = await response.json();
           setExistingNames(data.names || []);
+        } else if (response.status === 401) {
+          // User not authenticated, that's fine for claim flow
+          setExistingNames([]);
         }
       } catch (error) {
         console.error('Error fetching existing names:', error);
+        // Don't fail the component if we can't fetch names
+        setExistingNames([]);
       } finally {
         setLoading(false);
       }
