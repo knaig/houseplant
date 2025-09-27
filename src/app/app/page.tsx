@@ -15,42 +15,61 @@ export default async function DashboardPage() {
   }
   
   // Get user and their plants
-  let user = await db.user.findUnique({
-    where: { clerkId: userId },
-    include: {
-      plants: {
-        include: {
-          species: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      },
-      subscription: true,
-    },
-  })
-
-  if (!user) {
-    // Create user if doesn't exist
-    try {
-      user = await db.user.create({
-        data: {
-          clerkId: userId,
-          email: '', // Will be updated when we get email from Clerk
-        },
-        include: {
-          plants: {
-            include: {
-              species: true,
-            },
-            orderBy: { createdAt: 'desc' },
+  let user
+  try {
+    user = await db.user.findUnique({
+      where: { clerkId: userId },
+      include: {
+        plants: {
+          include: {
+            species: true,
           },
-          subscription: true,
+          orderBy: { createdAt: 'desc' },
         },
-      })
-    } catch (error) {
-      console.error('Error creating user:', error)
-      // If user creation fails, redirect to sign-in
-      redirect('/sign-in')
+        subscription: true,
+      },
+    })
+
+    if (!user) {
+      // Create user if doesn't exist
+      try {
+        user = await db.user.create({
+          data: {
+            clerkId: userId,
+            email: '', // Will be updated when we get email from Clerk
+          },
+          include: {
+            plants: {
+              include: {
+                species: true,
+              },
+              orderBy: { createdAt: 'desc' },
+            },
+            subscription: true,
+          },
+        })
+      } catch (error) {
+        console.error('Error creating user:', error)
+        // If user creation fails, redirect to sign-in
+        redirect('/sign-in')
+      }
     }
+  } catch (error) {
+    console.error('Database connection error:', error)
+    // Return a simple page without database dependency
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Database Setup Required</h1>
+          <p className="text-gray-600 mb-4">
+            The application needs a cloud database to function properly.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please set up a PostgreSQL database and update the DATABASE_URL environment variable.
+          </p>
+        </div>
+      </div>
+    )
   }
   
   const plantCount = user.plants.length
