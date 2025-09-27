@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  phoneE164     String?  @unique
+  clerkId       String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  subscription  Subscription?
+  plants        Plant[]
+  messages      Message[]
+  conversation  Conversation?
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  stripeCustomerId String @unique
+  stripeSubId   String   @unique
+  plan          Plan     @default(PRO)
+  status        SubStatus @default(ACTIVE)
+  currentPeriodEnd DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Plan { 
+  FREE 
+  PRO 
+  PRO_PLUS 
+}
+
+enum SubStatus { 
+  ACTIVE 
+  PAST_DUE 
+  CANCELED 
+}
+
+model Plant {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  speciesId     String
+  potSizeCm     Int?
+  lightLevel    LightLevel?
+  location      String?
+  personality   Personality?
+  lastWateredAt DateTime?
+  nextWaterDue  DateTime?
+  moistureBias  Float    @default(0) // adaptive nudge from feedback
+  customWaterDays Int?   // Optional override for species.defaultWaterDays
+  claimTokenId  String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  species       Species  @relation(fields: [speciesId], references: [id])
+  messages      Message[]
+
+  // Ensure plant names are unique within each user's collection
+  @@unique([userId, name])
+}
+
+enum LightLevel { 
+  LOW 
+  MEDIUM 
+  HIGH 
+}
+
+enum Personality { 
+  FUNNY 
+  COACH 
+  ZEN 
+  CLASSIC 
+}
+
+model Species {
+  id            String   @id @default(cuid())
+  commonName    String   @unique
+  latinName     String?
+  defaultWaterDays Int   // baseline interval
+  notes         String?
+  // Indian language names
+  hindiName     String?
+  tamilName     String?
+  teluguName    String?
+  bengaliName   String?
+  marathiName   String?
+  gujaratiName  String?
+  kannadaName   String?
+  malayalamName String?
+  punjabiName   String?
+  odiaName      String?
+  assameseName  String?
+  plants        Plant[]
+}
+
+model Message {
+  id            String   @id @default(cuid())
+  userId        String?
+  plantId       String?
+  conversationId String?
+  direction     Direction
+  channel       Channel  @default(WHATSAPP)
+  body          String
+  mediaUrl      String?
+  twilioSid     String?
+  createdAt     DateTime @default(now())
+  user          User?    @relation(fields: [userId], references: [id])
+  plant         Plant?   @relation(fields: [plantId], references: [id])
+  conversation  Conversation? @relation(fields: [conversationId], references: [id])
+}
+
+enum Direction { 
+  OUTBOUND 
+  INBOUND 
+}
+
+enum Channel { 
+  SMS 
+  WHATSAPP 
+}
+
+model Conversation {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  twilioSid     String   @unique
+  name          String   @default("Plant Family")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      Message[]
+}
+
+model ClaimToken {
+  id            String   @id @default(cuid())
+  plantTemplateJson String? // pre-printed sticker option OR empty for generic
+  token         String   @unique
+  expiresAt     DateTime
+  redeemedByUserId String?
+  createdAt     DateTime @default(now())
+}

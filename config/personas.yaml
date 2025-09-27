@@ -1,0 +1,78 @@
+# Plant Care App Persona Configuration for ValidateMe
+# Enhanced personas for "Text From Your Plants" MVP with detailed authentication flows
+
+personas:
+  - id: plant-newbie
+    goal: "Learn about plant care and get help with their first plant"
+    task: "Complete full user journey: sign up with email, verify account, claim a plant via QR code, set up plant personality, configure SMS preferences, and receive first reminder"
+    auth_required: true
+    steps:
+      - "Navigate to homepage and understand the value proposition"
+      - "Click 'Get Started' and initiate sign-up process"
+      - "Complete email sign-up with Clerk authentication"
+      - "Verify email address if required"
+      - "Access dashboard and see empty plant collection"
+      - "Click 'Add Plant' and choose QR code option"
+      - "Simulate QR code scanning process"
+      - "Select plant personality (Classic, Sassy, or Caring)"
+      - "Configure SMS preferences and phone number"
+      - "Complete plant setup and see confirmation"
+      - "Navigate to settings to understand billing options"
+    
+  - id: plant-enthusiast
+    goal: "Manage multiple plants efficiently with advanced features"
+    task: "Sign up, claim multiple plants, upgrade to Pro plan, manage plant settings, configure advanced SMS features, and test the complete workflow"
+    auth_required: true
+    steps:
+      - "Complete authentication and access dashboard"
+      - "Add first plant manually (not QR)"
+      - "Add second plant via QR simulation"
+      - "Explore upgrade options and pricing"
+      - "Upgrade to Pro plan (simulate payment flow)"
+      - "Add third plant to test Pro limits"
+      - "Access settings and configure advanced preferences"
+      - "Test plant management features"
+      - "Explore admin features if available"
+    
+  - id: mobile-user
+    goal: "Use the app primarily on mobile for plant care reminders"
+    task: "Test mobile experience: responsive design, touch interactions, mobile-optimized flows, and SMS integration"
+    auth_required: true
+    mobile_focused: true
+    steps:
+      - "Access app on mobile viewport (375x667)"
+      - "Complete mobile-optimized sign-up flow"
+      - "Test mobile navigation and touch interactions"
+      - "Add plant using mobile-friendly interface"
+      - "Configure SMS settings on mobile"
+      - "Test mobile responsiveness across different screen sizes"
+      - "Verify mobile-optimized dashboard layout"
+    
+  - id: admin-user
+    goal: "Manage the platform and generate QR codes for distribution"
+    task: "Access admin panel, generate QR codes in batches, view user statistics, manage platform settings, and oversee plant distribution"
+    auth_required: true
+    admin_access: true
+    steps:
+      - "Complete authentication with admin privileges"
+      - "Navigate to admin panel (/admin)"
+      - "View platform statistics and user metrics"
+      - "Generate QR codes in batches"
+      - "Download QR code PDF sheets"
+      - "Manage user accounts and subscriptions"
+      - "View message logs and system health"
+      - "Test admin-specific features and controls"
+    
+  - id: budget-conscious-user
+    goal: "Find the best value option for plant care"
+    task: "Compare pricing plans, test free tier limitations, evaluate Pro plan value, and make informed subscription decision"
+    auth_required: true
+    steps:
+      - "Complete authentication and access dashboard"
+      - "Explore pricing page and compare plans"
+      - "Test free tier with single plant"
+      - "Attempt to add second plant (should hit limit)"
+      - "Review upgrade prompts and value propositions"
+      - "Compare Stripe vs Razorpay pricing"
+      - "Test billing portal and subscription management"
+      - "Evaluate overall value and make decision"
