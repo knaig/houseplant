@@ -28,7 +28,7 @@ const envSchema = z.object({
   TWILIO_API_SECRET: z.string().min(1).optional(),
   
   // Monitoring
-  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).optional(),
   
   // Background Jobs
