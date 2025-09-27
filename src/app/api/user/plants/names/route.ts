@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Query user's plants and get only the name field for performance
-    const userPlants = await db.user.findUnique({
-      where: { id: userId },
+    // Get user from Clerk ID
+    let user = await db.user.findUnique({
+      where: { clerkId: userId },
       select: {
         plants: {
           select: {
@@ -30,15 +30,25 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    if (!userPlants) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+    if (!user) {
+      // Create user if doesn't exist
+      user = await db.user.create({
+        data: {
+          clerkId: userId,
+          email: '', // Will be updated when we get email from Clerk
+        },
+        select: {
+          plants: {
+            select: {
+              name: true
+            }
+          }
+        }
+      });
     }
 
     // Extract just the names array
-    const names = userPlants.plants.map(plant => plant.name);
+    const names = user.plants.map(plant => plant.name);
 
     // Return lightweight response with caching headers
     return NextResponse.json(

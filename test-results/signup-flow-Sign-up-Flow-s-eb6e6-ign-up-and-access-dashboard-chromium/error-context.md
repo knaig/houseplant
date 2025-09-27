@@ -1,0 +1,59 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]: 🌱
+      - heading "Join Plant Care" [level=1] [ref=e7]
+      - paragraph [ref=e8]: Create your account to start receiving WhatsApp messages from your plants
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e13]:
+          - heading "Create your account" [level=1] [ref=e14]
+          - paragraph [ref=e15]: Welcome! Please fill in the details to get started.
+        - generic [ref=e16]:
+          - generic [ref=e18]:
+            - button "Sign in with GitHub" [ref=e19] [cursor=pointer]:
+              - img "Sign in with GitHub" [ref=e20] [cursor=pointer]
+            - button "Sign in with Google" [ref=e21] [cursor=pointer]:
+              - img "Sign in with Google" [ref=e22] [cursor=pointer]
+            - button "Sign in with LinkedIn" [ref=e23] [cursor=pointer]:
+              - img "Sign in with LinkedIn" [ref=e24] [cursor=pointer]
+          - paragraph [ref=e27]: or
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - generic [ref=e33]:
+                - generic [ref=e35]: Email address
+                - textbox "Email address" [ref=e36]
+              - generic [ref=e39]:
+                - generic [ref=e41]: Password
+                - generic [ref=e42]:
+                  - textbox "Password" [ref=e43]
+                  - button "Show password" [ref=e44] [cursor=pointer]:
+                    - img [ref=e45] [cursor=pointer]
+            - button "Continue" [ref=e50] [cursor=pointer]:
+              - generic [ref=e51] [cursor=pointer]:
+                - text: Continue
+                - img [ref=e52] [cursor=pointer]
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]: Already have an account?
+          - link "Sign in" [ref=e57] [cursor=pointer]:
+            - /url: http://localhost:3000/sign-in#/?after_sign_in_url=http%3A%2F%2Flocalhost%3A3000%2Fapp&after_sign_up_url=http%3A%2F%2Flocalhost%3A3000%2Fapp&redirect_url=http%3A%2F%2Flocalhost%3A3000%2F
+        - generic [ref=e59]:
+          - generic [ref=e61]:
+            - paragraph [ref=e62]: Secured by
+            - link "Clerk logo" [ref=e63] [cursor=pointer]:
+              - /url: https://go.clerk.com/components
+              - img [ref=e64] [cursor=pointer]
+          - paragraph [ref=e69]: Development mode
+    - paragraph [ref=e71]:
+      - text: Already have an account?
+      - link "Sign in" [ref=e72] [cursor=pointer]:
+        - /url: /sign-in
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e78] [cursor=pointer]:
+    - img [ref=e79] [cursor=pointer]
+  - alert [ref=e82]: Text From Your Plants
+```

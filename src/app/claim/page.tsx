@@ -95,7 +95,40 @@ function ClaimPageContent() {
       })
       
       if (!response.ok) {
-        throw new Error('Failed to claim plant')
+        let errorMessage = 'Failed to claim plant'
+        let errorDetails = {}
+        
+        try {
+          const errorData = await response.json()
+          console.error('Claim API error details:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+            errorData,
+            timestamp: new Date().toISOString()
+          })
+          errorMessage = errorData.error || errorMessage
+          errorDetails = errorData
+        } catch (parseError) {
+          console.error('Failed to parse error response:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+            parseError: parseError instanceof Error ? parseError.message : 'Unknown parse error',
+            timestamp: new Date().toISOString()
+          })
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        }
+        
+        // Log the full error context
+        console.error('Plant claim failed:', {
+          errorMessage,
+          errorDetails,
+          requestData: { token, ...formData },
+          timestamp: new Date().toISOString()
+        })
+        
+        throw new Error(errorMessage)
       }
       
       const result = await response.json()

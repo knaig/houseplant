@@ -36,7 +36,7 @@ export default async function DashboardPage() {
         user = await db.user.create({
           data: {
             clerkId: userId,
-            email: '', // Will be updated when we get email from Clerk
+            email: `user-${userId}@temp.com`, // Temporary email until we get it from Clerk
           },
           include: {
             plants: {

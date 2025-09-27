@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
-import { getPlantLimitForPlan } from '@/lib/stripe'
+
+// Simple plant limits without Stripe dependency
+const PLANT_LIMITS = {
+  FREE: 1,
+  PRO: 10,
+  PRO_PLUS: 25
+} as const
 
 export async function enforcePlantLimit(request: NextRequest) {
   try {
@@ -11,11 +17,10 @@ export async function enforcePlantLimit(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Get user and their subscription
+    // Get user and their plants
     const user = await db.user.findUnique({
       where: { clerkId: userId },
       include: {
-        subscription: true,
         plants: true,
       },
     })
@@ -24,8 +29,8 @@ export async function enforcePlantLimit(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
-    const plan = user.subscription?.plan || 'FREE'
-    const plantLimit = getPlantLimitForPlan(plan)
+    // For now, use PRO_PLUS limit (25 plants) for all users
+    const plantLimit = PLANT_LIMITS.PRO_PLUS
     const currentPlantCount = user.plants.length
     
     if (currentPlantCount >= plantLimit) {
@@ -34,7 +39,7 @@ export async function enforcePlantLimit(request: NextRequest) {
         details: {
           currentCount: currentPlantCount,
           limit: plantLimit,
-          plan,
+          plan: 'PRO_PLUS',
         }
       }, { status: 403 })
     }

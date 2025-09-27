@@ -1,9 +1,12 @@
 import Stripe from 'stripe'
 import { env } from './env'
 
-export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-08-27.basil',
-})
+// Only initialize Stripe if we have a real key
+export const stripe = env.STRIPE_SECRET_KEY && !env.STRIPE_SECRET_KEY.includes('placeholder') 
+  ? new Stripe(env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    })
+  : null
 
 export const PLANS = {
   FREE: {
@@ -39,6 +42,10 @@ export async function createCheckoutSession({
   successUrl: string
   cancelUrl: string
 }) {
+  if (!stripe) {
+    throw new Error('Stripe not configured')
+  }
+  
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: [
