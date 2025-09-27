@@ -3,9 +3,15 @@ import { env } from './env'
 import { formatPhoneForWhatsApp } from './utils'
 import { db } from './db'
 
-const client = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN)
+// Only initialize Twilio client if credentials are available
+const client = env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN 
+  ? twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN)
+  : null
 
 export function getConversationService() {
+  if (!client) {
+    throw new Error('Twilio client not initialized. Check environment variables.')
+  }
   return client.conversations.v1
 }
 
@@ -45,6 +51,13 @@ export interface ConversationParticipantOptions {
 
 export async function sendSMS({ to, body, from }: SendSMSOptions) {
   try {
+    if (!client) {
+      return {
+        success: false,
+        error: 'Twilio client not initialized. Check environment variables.'
+      }
+    }
+
     const messageOptions: any = {
       body,
       to,
@@ -74,6 +87,13 @@ export async function sendSMS({ to, body, from }: SendSMSOptions) {
 
 export async function sendWhatsApp({ to, body, mediaUrl, from }: SendWhatsAppOptions) {
   try {
+    if (!client) {
+      return {
+        success: false,
+        error: 'Twilio client not initialized. Check environment variables.'
+      }
+    }
+
     // Ensure phone number has whatsapp: prefix
     const whatsappTo = to.startsWith('whatsapp:') ? to : formatPhoneForWhatsApp(to)
     const whatsappFrom = from || env.TWILIO_WHATSAPP_FROM
@@ -205,6 +225,13 @@ export function parseInboundMessage(body: string): {
 
 export async function createConversation({ friendlyName, messagingServiceSid }: ConversationOptions) {
   try {
+    if (!client) {
+      return {
+        success: false,
+        error: 'Twilio client not initialized. Check environment variables.'
+      }
+    }
+
     const conversation = await client.conversations.v1.conversations.create({
       friendlyName,
       messagingServiceSid,
@@ -226,6 +253,13 @@ export async function createConversation({ friendlyName, messagingServiceSid }: 
 
 export async function addConversationParticipant({ conversationSid, identity, messagingBinding }: ConversationParticipantOptions) {
   try {
+    if (!client) {
+      return {
+        success: false,
+        error: 'Twilio client not initialized. Check environment variables.'
+      }
+    }
+
     const participantOptions: any = {
       conversationSid,
       identity,
@@ -253,6 +287,13 @@ export async function addConversationParticipant({ conversationSid, identity, me
 
 export async function sendConversationMessage({ conversationSid, author, body, mediaUrl }: ConversationMessageOptions) {
   try {
+    if (!client) {
+      return {
+        success: false,
+        error: 'Twilio client not initialized. Check environment variables.'
+      }
+    }
+
     const messageOptions: any = {
       conversationSid,
       author,
