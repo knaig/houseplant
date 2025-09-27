@@ -19,10 +19,10 @@ const envSchema = z.object({
   NEXT_PUBLIC_RAZORPAY_KEY_ID: z.string().min(1),
   
   // Twilio
-  TWILIO_ACCOUNT_SID: z.string().regex(/^AC[a-f0-9]{32}$/).optional(),
-  TWILIO_AUTH_TOKEN: z.string().min(1).optional(),
-  TWILIO_MESSAGING_SERVICE_SID: z.string().regex(/^MG[a-f0-9]{32}$/).optional(),
-  TWILIO_WHATSAPP_FROM: z.string().regex(/^whatsapp:\+\d{10,15}$/).optional(),
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_MESSAGING_SERVICE_SID: z.string().optional(),
+  TWILIO_WHATSAPP_FROM: z.string().optional(),
   TWILIO_STATUS_CALLBACK_URL: z.string().url().optional(),
   TWILIO_API_KEY: z.string().min(1).optional(),
   TWILIO_API_SECRET: z.string().min(1).optional(),
