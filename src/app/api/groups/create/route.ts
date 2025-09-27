@@ -61,6 +61,29 @@ export async function POST(request: NextRequest) {
     
     if (!conversationResult.success) {
       console.error('Failed to create conversation:', conversationResult.error)
+      // If Twilio is not configured, create a mock conversation
+      if (conversationResult.error?.includes('Twilio client not initialized')) {
+        const mockConversation = await db.conversation.create({
+          data: {
+            userId: user.id,
+            twilioSid: 'mock_conversation_' + Date.now(),
+            name: 'Plant Family',
+            isActive: true,
+          },
+        })
+        
+        return NextResponse.json({ 
+          success: true, 
+          conversation: {
+            id: mockConversation.id,
+            name: mockConversation.name,
+            participantCount: user.plants.length + 1,
+            createdAt: mockConversation.createdAt,
+          },
+          message: 'Plant Family group created (Twilio not configured)'
+        })
+      }
+      
       return NextResponse.json({ 
         error: `Failed to create Plant Family group: ${conversationResult.error}` 
       }, { status: 500 })
