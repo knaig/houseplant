@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,7 +32,7 @@ interface ClaimFormData {
   lastWateredAt: string
 }
 
-export default function ClaimPage() {
+function ClaimPageContent() {
   const { user, isLoaded } = useUser()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
@@ -376,5 +376,17 @@ export default function ClaimPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function ClaimPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
+        <LoadingState message="Loading your plant claim page..." size="lg" />
+      </div>
+    }>
+      <ClaimPageContent />
+    </Suspense>
   )
 }
