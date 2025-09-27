@@ -3,16 +3,22 @@ import { env } from './env'
 import { formatPhoneForWhatsApp } from './utils'
 import { db } from './db'
 
-// Only initialize Twilio client if credentials are available
-const client = env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN 
-  ? twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN)
-  : null
+// Lazy initialization of Twilio client
+let client: any = null
+
+function getTwilioClient() {
+  if (!client && env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN) {
+    client = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN)
+  }
+  return client
+}
 
 export function getConversationService() {
-  if (!client) {
+  const twilioClient = getTwilioClient()
+  if (!twilioClient) {
     throw new Error('Twilio client not initialized. Check environment variables.')
   }
-  return client.conversations.v1
+  return twilioClient.conversations.v1
 }
 
 export interface SendSMSOptions {
@@ -51,7 +57,8 @@ export interface ConversationParticipantOptions {
 
 export async function sendSMS({ to, body, from }: SendSMSOptions) {
   try {
-    if (!client) {
+    const twilioClient = getTwilioClient()
+    if (!twilioClient) {
       return {
         success: false,
         error: 'Twilio client not initialized. Check environment variables.'
@@ -69,7 +76,7 @@ export async function sendSMS({ to, body, from }: SendSMSOptions) {
       messageOptions.statusCallback = env.TWILIO_STATUS_CALLBACK_URL
     }
     
-    const message = await client.messages.create(messageOptions)
+    const message = await twilioClient.messages.create(messageOptions)
     
     return {
       success: true,
@@ -87,7 +94,8 @@ export async function sendSMS({ to, body, from }: SendSMSOptions) {
 
 export async function sendWhatsApp({ to, body, mediaUrl, from }: SendWhatsAppOptions) {
   try {
-    if (!client) {
+    const twilioClient = getTwilioClient()
+    if (!twilioClient) {
       return {
         success: false,
         error: 'Twilio client not initialized. Check environment variables.'
@@ -113,7 +121,7 @@ export async function sendWhatsApp({ to, body, mediaUrl, from }: SendWhatsAppOpt
       messageOptions.statusCallback = env.TWILIO_STATUS_CALLBACK_URL
     }
     
-    const message = await client.messages.create(messageOptions)
+    const message = await twilioClient.messages.create(messageOptions)
     
     return {
       success: true,
@@ -225,14 +233,15 @@ export function parseInboundMessage(body: string): {
 
 export async function createConversation({ friendlyName, messagingServiceSid }: ConversationOptions) {
   try {
-    if (!client) {
+    const twilioClient = getTwilioClient()
+    if (!twilioClient) {
       return {
         success: false,
         error: 'Twilio client not initialized. Check environment variables.'
       }
     }
 
-    const conversation = await client.conversations.v1.conversations.create({
+    const conversation = await twilioClient.conversations.v1.conversations.create({
       friendlyName,
       messagingServiceSid,
     })
@@ -253,7 +262,8 @@ export async function createConversation({ friendlyName, messagingServiceSid }: 
 
 export async function addConversationParticipant({ conversationSid, identity, messagingBinding }: ConversationParticipantOptions) {
   try {
-    if (!client) {
+    const twilioClient = getTwilioClient()
+    if (!twilioClient) {
       return {
         success: false,
         error: 'Twilio client not initialized. Check environment variables.'
@@ -269,7 +279,7 @@ export async function addConversationParticipant({ conversationSid, identity, me
       participantOptions.messagingBinding = messagingBinding
     }
     
-    const participant = await client.conversations.v1.conversations(conversationSid).participants.create(participantOptions)
+    const participant = await twilioClient.conversations.v1.conversations(conversationSid).participants.create(participantOptions)
     
     return {
       success: true,
@@ -287,7 +297,8 @@ export async function addConversationParticipant({ conversationSid, identity, me
 
 export async function sendConversationMessage({ conversationSid, author, body, mediaUrl }: ConversationMessageOptions) {
   try {
-    if (!client) {
+    const twilioClient = getTwilioClient()
+    if (!twilioClient) {
       return {
         success: false,
         error: 'Twilio client not initialized. Check environment variables.'
@@ -304,7 +315,7 @@ export async function sendConversationMessage({ conversationSid, author, body, m
       messageOptions.mediaSid = mediaUrl
     }
     
-    const message = await client.conversations.v1.conversations(conversationSid).messages.create(messageOptions)
+    const message = await twilioClient.conversations.v1.conversations(conversationSid).messages.create(messageOptions)
     
     return {
       success: true,
