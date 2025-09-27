@@ -111,14 +111,19 @@ export async function POST(request: NextRequest) {
     // Schedule first reminder
     const nextWaterDue = new Date(new Date(lastWateredAt).getTime() + (plant.species.defaultWaterDays * 24 * 60 * 60 * 1000))
     
-    await inngest.send({
-      name: 'plant/reminder.scheduled',
-      data: {
-        plantId: plant.id,
-        userId: user.id,
-        scheduledFor: nextWaterDue.toISOString(),
-      },
-    })
+    try {
+      await inngest.send({
+        name: 'plant/reminder.scheduled',
+        data: {
+          plantId: plant.id,
+          userId: user.id,
+          scheduledFor: nextWaterDue.toISOString(),
+        },
+      })
+    } catch (inngestError) {
+      console.warn('Failed to schedule reminder via Inngest:', inngestError)
+      // Continue anyway - the plant is still claimed successfully
+    }
     
     // Update plant with next water due
     await db.plant.update({

@@ -82,7 +82,8 @@ function isValidTokenFormat(token: string): boolean {
 
   // Token should be alphanumeric and reasonable length
   // Based on createClaimToken(): 2 random strings of ~13 chars each
-  const tokenRegex = /^[a-zA-Z0-9]{20,30}$/
+  // Allow for some variation in length (16-32 characters)
+  const tokenRegex = /^[a-zA-Z0-9]{16,32}$/
   return tokenRegex.test(token)
 }
 
