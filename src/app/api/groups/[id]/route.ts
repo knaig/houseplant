@@ -116,6 +116,10 @@ export async function PATCH(
         
         if (!participantResult.success) {
           console.error(`Failed to add plant ${plant.name} participant:`, participantResult.error)
+          // Continue if Twilio is not configured
+          if (!participantResult.error?.includes('Twilio client not initialized')) {
+            // Only log non-Twilio errors
+          }
         }
       }
     }
