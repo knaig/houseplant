@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['error'] : ['error'], // Reduced logging for performance
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'], // Enable query logging for debugging
     // Performance optimizations
     datasources: {
       db: {
@@ -20,5 +20,19 @@ export const db =
       timeout: 10000, // 10 seconds
     },
   })
+
+// Force a fresh connection for API routes to avoid caching issues
+export const getFreshDb = () => new PrismaClient({
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  transactionOptions: {
+    maxWait: 5000,
+    timeout: 10000,
+  },
+})
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db

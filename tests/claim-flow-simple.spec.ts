@@ -2,11 +2,16 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Claim Plant Flow - Simple Tests', () => {
   test('should show sign-in required when not authenticated', async ({ page }) => {
-    // Navigate to claim page without authentication
-    await page.goto('/claim?token=test-token-123');
+    // Use a valid token from the database
+    const validToken = 'n7sqi8wlvlpalq2haj83';
+    await page.goto(`/claim?token=${validToken}`);
     
-    // Wait for page to load
+    // Wait for page to load and authentication check to complete
     await page.waitForLoadState('networkidle');
+    
+    // Wait for the authentication check to complete (client-side)
+    // The page should show "Sign In Required" for unauthenticated users
+    await page.waitForSelector('text=Sign In Required', { timeout: 15000 });
     
     // Check for sign-in required message
     const signInRequired = page.locator('text=Sign In Required');
@@ -22,30 +27,30 @@ test.describe('Claim Plant Flow - Simple Tests', () => {
     
     await page.waitForLoadState('networkidle');
     
-    // Should show invalid token message
-    const invalidTokenMessage = page.locator('text=Invalid QR Code Link');
-    await expect(invalidTokenMessage).toBeVisible();
+    // Should show missing token message (server-side validation)
+    const missingTokenMessage = page.locator('text=Missing Token');
+    await expect(missingTokenMessage).toBeVisible();
     
     // Take screenshot for debugging
     await page.screenshot({ path: 'test-results/claim-no-token-simple.png' });
   });
 
   test('should load claim form with valid token structure', async ({ page }) => {
-    // Use a mock token that matches the expected format
-    const mockToken = 'abcdefghijklmnopqrstuvwxyz123456';
-    await page.goto(`/claim?token=${mockToken}`);
+    // Use a valid token from the database
+    const validToken = 'n7sqi8wlvlpalq2haj83';
+    await page.goto(`/claim?token=${validToken}`);
     
     await page.waitForLoadState('networkidle');
     
-    // Check if we get to the claim form (even if token is invalid, we should see the form structure)
+    // Wait for authentication check to complete
+    await page.waitForSelector('text=Sign In Required', { timeout: 10000 });
+    
+    // Check if we get to the claim form (should show sign-in required for unauthenticated users)
+    const signInRequired = page.locator('text=Sign In Required');
     const claimTitle = page.locator('text=Claim Your Plant');
     
-    // The page should either show the claim form or an invalid token message
-    const hasClaimForm = await claimTitle.isVisible();
-    const hasInvalidToken = await page.locator('text=Invalid QR Code Link').isVisible();
-    
-    // One of these should be true
-    expect(hasClaimForm || hasInvalidToken).toBe(true);
+    // Should show sign-in required since we're not authenticated
+    await expect(signInRequired).toBeVisible();
     
     // Take screenshot for debugging
     await page.screenshot({ path: 'test-results/claim-form-structure.png' });

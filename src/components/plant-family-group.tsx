@@ -224,19 +224,21 @@ export function PlantFamilyGroup({ user }: PlantFamilyGroupProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               🌱 Plant Family Group
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm sm:text-base">
               Your WhatsApp group with {user.plants.length + 1} participants
             </CardDescription>
           </div>
-          <ConversationStatus 
-            conversationId={user.conversation.id} 
-            compact 
-          />
+          <div className="flex justify-center sm:justify-end">
+            <ConversationStatus 
+              conversationId={user.conversation.id} 
+              compact 
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -259,10 +261,10 @@ export function PlantFamilyGroup({ user }: PlantFamilyGroupProps) {
         />
 
         {/* Quick Actions */}
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button 
             asChild
-            className="flex-1"
+            className="flex-1 h-12 sm:h-10"
           >
             <Link href="/app/chat">
               <MessageSquare className="h-4 w-4 mr-2" />
@@ -274,6 +276,7 @@ export function PlantFamilyGroup({ user }: PlantFamilyGroupProps) {
             disabled={isSyncing}
             variant="outline"
             size="sm"
+            className="h-12 sm:h-10"
           >
             {isSyncing ? 'Syncing...' : 'Sync Plants'}
           </Button>

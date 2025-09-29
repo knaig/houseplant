@@ -1,450 +1,89 @@
-'use client'
+import { ClaimPageContent } from "./client"
+import { db } from "@/lib/db"
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { useUser } from '@clerk/nextjs'
-import { toast } from 'sonner'
-import { ProgressIndicator } from '@/components/progress-indicator'
-import { LoadingState } from '@/components/loading-state'
-import { PlantNameField } from '@/components/plant-name-field'
+// Validate token before showing the form
+export default async function ClaimPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>
+}) {
+  const params = await searchParams
+  const token = params.token
 
-interface Species {
-  id: string
-  commonName: string
-  latinName?: string
-  defaultWaterDays: number
-}
-
-interface ClaimFormData {
-  name: string
-  speciesId: string
-  potSizeCm: number
-  lightLevel: 'LOW' | 'MEDIUM' | 'HIGH'
-  location: string
-  personality: 'FUNNY' | 'COACH' | 'ZEN' | 'CLASSIC'
-  lastWateredAt: string
-}
-
-function ClaimPageContent() {
-  const { user, isLoaded } = useUser()
-  const searchParams = useSearchParams()
-  const token = searchParams.get('token')
-  
-  const [species, setSpecies] = useState<Species[]>([])
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState<ClaimFormData>({
-    name: '',
-    speciesId: '',
-    potSizeCm: 15,
-    lightLevel: 'MEDIUM',
-    location: '',
-    personality: 'FUNNY',
-    lastWateredAt: new Date().toISOString().split('T')[0],
-  })
-  
-  useEffect(() => {
-    if (isLoaded && !user) {
-      toast.error('Please sign in to claim a plant')
-    }
-  }, [isLoaded, user])
-  
-  useEffect(() => {
-    // Load species data
-    fetch('/api/species')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Failed to load species: ${res.status} ${res.statusText}`)
-        }
-        return res.json()
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          setSpecies(data)
-        } else {
-          console.error('Invalid species data format:', data)
-          setSpecies([])
-        }
-      })
-      .catch(err => {
-        console.error('Failed to load species:', err)
-        setSpecies([]) // Set empty array to prevent form from being completely broken
-      })
-  }, [])
-  
-  // Get selected species for name suggestions
-  const selectedSpecies = species.find(s => s.id === formData.speciesId)
-
-  const handleSpeciesChange = (speciesId: string) => {
-    setFormData({ 
-      ...formData, 
-      speciesId,
-      name: '' // Clear name when species changes to refresh suggestions
-    })
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!user || !token) {
-      toast.error('Please sign in and provide a valid token')
-      return
-    }
-    
-    setLoading(true)
-    
-    try {
-      const response = await fetch('/api/plants/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token,
-          ...formData,
-        }),
-      })
-      
-      if (!response.ok) {
-        let errorMessage = 'Failed to claim plant'
-        let errorDetails = {}
-        
-        try {
-          const errorData = await response.json()
-          console.error('Claim API error details:', {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url,
-            errorData,
-            timestamp: new Date().toISOString()
-          })
-          errorMessage = errorData.error || errorMessage
-          errorDetails = errorData
-        } catch (parseError) {
-          console.error('Failed to parse error response:', {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url,
-            parseError: parseError instanceof Error ? parseError.message : 'Unknown parse error',
-            timestamp: new Date().toISOString()
-          })
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`
-        }
-        
-        // Log the full error context
-        console.error('Plant claim failed:', {
-          errorMessage,
-          errorDetails,
-          requestData: { token, ...formData },
-          timestamp: new Date().toISOString()
-        })
-        
-        throw new Error(errorMessage)
-      }
-      
-      const result = await response.json()
-      toast.success('🌱 Plant claimed successfully! You\'ll receive your first WhatsApp reminder soon.')
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = '/app'
-      }, 2000)
-      
-    } catch (error) {
-      console.error('Error claiming plant:', error)
-      toast.error('Failed to claim plant. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-  
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
-        <LoadingState message="Loading your plant claim page..." size="lg" />
-      </div>
-    )
-  }
-  
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🔒</span>
-            </div>
-            <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>
-              You need to sign in to claim your plant. This helps us keep track of your plants and send you personalized reminders.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button className="w-full" onClick={() => window.location.href = '/sign-in'}>
-              Sign In to Continue
-            </Button>
-            <p className="text-sm text-gray-500 text-center">
-              Don't have an account? <a href="/sign-up" className="text-green-600 hover:underline">Sign up for free</a>
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-  
   if (!token) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">❌</span>
-            </div>
-            <CardTitle>Invalid QR Code Link</CardTitle>
-            <CardDescription>
-              This QR code link is invalid or has expired. Please scan a valid QR code from your plant pot.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-gray-500 mb-4">
-              Make sure you're scanning the QR code correctly with your phone camera.
-            </p>
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
-              Back to Home
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">❌ Missing Token</h1>
+          <p className="text-gray-600 mb-4">No QR code token was provided. Please scan a valid QR code to claim your plant.</p>
+          <a href="/" className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Home</a>
+        </div>
       </div>
     )
   }
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              🌱 Claim Your Plant
-            </CardTitle>
-            <CardDescription>
-              Tell us about your new plant friend so we can send personalized reminders. 
-              <br/><br/>
-              <strong>💡 Tip:</strong> The more accurate information you provide, the better we can care for your plant!
-            </CardDescription>
-            
-            {/* Progress Indicator */}
-            <div className="mt-6">
-              <ProgressIndicator
-                steps={[
-                  {
-                    id: 'scan',
-                    title: 'Scan QR',
-                    description: 'QR code scanned',
-                    completed: true,
-                    current: false
-                  },
-                  {
-                    id: 'info',
-                    title: 'Plant Info',
-                    description: 'Choose a fun name with suggestions',
-                    completed: false,
-                    current: true
-                  },
-                  {
-                    id: 'setup',
-                    title: 'Setup',
-                    description: 'Choose personality',
-                    completed: false,
-                    current: false
-                  },
-                  {
-                    id: 'complete',
-                    title: 'Complete',
-                    description: 'Start receiving WhatsApp messages',
-                    completed: false,
-                    current: false
-                  }
-                ]}
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Plant Name *</Label>
-                <PlantNameField
-                  value={formData.name}
-                  onChange={(name) => setFormData({ ...formData, name })}
-                  speciesCommonName={selectedSpecies?.commonName}
-                  personality={formData.personality}
-                  disabled={loading}
-                  placeholder="Choose a fun name for your plant..."
-                />
-                <p className="text-sm text-gray-500">Give your plant a fun name! This will appear in your WhatsApp messages.</p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="species">Plant Species *</Label>
-                <Select
-                  value={formData.speciesId}
-                  onValueChange={handleSpeciesChange}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your plant species" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {species.length > 0 ? (
-                      species.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.commonName} {s.latinName && `(${s.latinName})`}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="no-species" disabled>
-                        No species available - please refresh the page
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-gray-500">This helps us determine the right watering schedule for your plant.</p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="potSize">Pot Size (cm) *</Label>
-                  <Input
-                    id="potSize"
-                    type="number"
-                    value={formData.potSizeCm}
-                    onChange={(e) => setFormData({ ...formData, potSizeCm: parseInt(e.target.value) })}
-                    min="5"
-                    max="50"
-                    required
-                  />
-                  <p className="text-sm text-gray-500">Measure the diameter of your pot</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="lightLevel">Light Level *</Label>
-                  <Select
-                    value={formData.lightLevel}
-                    onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH') => 
-                      setFormData({ ...formData, lightLevel: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select light level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="LOW">Low Light (shady corner)</SelectItem>
-                      <SelectItem value="MEDIUM">Medium Light (near window)</SelectItem>
-                      <SelectItem value="HIGH">High Light (bright window)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-gray-500">How much light does your plant get?</p>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="location">Location (optional)</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="e.g., Living room, Kitchen window"
-                />
-                <p className="text-sm text-gray-500">Where is your plant located? This helps us understand its environment.</p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="personality">Plant Personality *</Label>
-                <Select
-                  value={formData.personality}
-                  onValueChange={(value: 'FUNNY' | 'COACH' | 'ZEN' | 'CLASSIC') => 
-                    setFormData({ ...formData, personality: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="FUNNY">
-                      <div className="flex items-center gap-2">
-                        <span>😄 Funny</span>
-                        <Badge variant="secondary">Casual & playful</Badge>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="COACH">
-                      <div className="flex items-center gap-2">
-                        <span>💪 Coach</span>
-                        <Badge variant="secondary">Motivational</Badge>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="ZEN">
-                      <div className="flex items-center gap-2">
-                        <span>🧘‍♀️ Zen</span>
-                        <Badge variant="secondary">Calm & mindful</Badge>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="CLASSIC">
-                      <div className="flex items-center gap-2">
-                        <span>🌿 Classic</span>
-                        <Badge variant="secondary">Simple & clear</Badge>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-gray-500">Choose how your plant will communicate with you via WhatsApp.</p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="lastWatered">Last Watered *</Label>
-                <Input
-                  id="lastWatered"
-                  type="date"
-                  value={formData.lastWateredAt}
-                  onChange={(e) => setFormData({ ...formData, lastWateredAt: e.target.value })}
-                  required
-                />
-                <p className="text-sm text-gray-500">When did you last water this plant? This helps us calculate the next reminder.</p>
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">🎉 Almost Done!</h4>
-                <p className="text-sm text-blue-700">
-                  Once you claim your plant, you'll receive personalized WhatsApp messages based on your plant's needs. 
-                  You can always update these settings later in your dashboard.
-                </p>
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={loading || species.length === 0 || !formData.speciesId || !formData.name.trim()}
-              >
-                {loading ? 'Claiming Plant...' : 'Claim My Plant 🌱'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
-}
 
-export default function ClaimPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
-        <LoadingState message="Loading your plant claim page..." size="lg" />
+  // Validate token exists and is not expired/redeemed
+  try {
+    const tokenResult = await db.$queryRaw`
+      SELECT id, token, "expiresAt", "redeemedByUserId"
+      FROM "ClaimToken"
+      WHERE token = ${token}
+      LIMIT 1
+    `
+
+    const claimToken = Array.isArray(tokenResult) && tokenResult.length > 0 ? tokenResult[0] : null
+
+    if (!claimToken) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center p-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">❌ Invalid Token</h1>
+            <p className="text-gray-600 mb-4">The QR code token "{token}" is not valid or does not exist.</p>
+            <a href="/" className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Home</a>
+          </div>
+        </div>
+      )
+    }
+
+    // Check if token is expired
+    if (claimToken.expiresAt < new Date()) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center p-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-orange-600 mb-4">⏰ Token Expired</h1>
+            <p className="text-gray-600 mb-4">This QR code token has expired. Please get a fresh QR code.</p>
+            <a href="/" className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Home</a>
+          </div>
+        </div>
+      )
+    }
+
+    // Check if token is already redeemed
+    if (claimToken.redeemedByUserId) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 flex items-center justify-center p-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-purple-600 mb-4">✅ Already Claimed</h1>
+            <p className="text-gray-600 mb-4">This QR code has already been used to claim a plant.</p>
+            <a href="/" className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Home</a>
+          </div>
+        </div>
+      )
+    }
+
+    // Token is valid - show the claim form
+    return <ClaimPageContent token={token} />
+    
+  } catch (error) {
+    console.error('Error validating token:', error)
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-slate-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-600 mb-4">⚠️ Validation Error</h1>
+          <p className="text-gray-600 mb-4">Unable to validate the QR code token. Please try again.</p>
+          <a href="/" className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Back to Home</a>
+        </div>
       </div>
-    }>
-      <ClaimPageContent />
-    </Suspense>
-  )
+    )
+  }
 }

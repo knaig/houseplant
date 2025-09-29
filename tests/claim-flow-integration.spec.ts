@@ -10,7 +10,7 @@ test.describe('Claim Plant Flow - Integration Tests', () => {
     
     // Check page structure
     const claimTitle = page.locator('text=Claim Your Plant');
-    const invalidTokenMessage = page.locator('text=Invalid QR Code Link');
+    const invalidTokenMessage = page.locator('text=Missing Token');
     
     // Should show either the claim form or invalid token message
     const hasClaimForm = await claimTitle.isVisible();
@@ -20,7 +20,7 @@ test.describe('Claim Plant Flow - Integration Tests', () => {
     
     if (hasClaimForm) {
       // Test form elements are present
-      const plantNameField = page.locator('input[placeholder*="fun name"]');
+      const plantNameField = page.locator('input[placeholder*="Enter a fun name"]');
       const speciesSelect = page.locator('[role="combobox"]').first();
       const submitButton = page.locator('button[type="submit"]');
       
@@ -135,10 +135,11 @@ test.describe('Claim Plant Flow - Integration Tests', () => {
     await page.goto('/claim?token=validtoken123456789012345678');
     await page.waitForLoadState('networkidle');
     
-    const signInRequired = await page.locator('text=Sign In Required').isVisible();
-    const signInButton = await page.locator('text=Sign In to Continue').isVisible();
+    const signInRequired = page.locator('text=Sign In Required');
+    const signInButton = page.locator('text=Sign In to Continue');
     
-    if (signInRequired) {
+    const isSignInRequired = await signInRequired.isVisible();
+    if (isSignInRequired) {
       await expect(signInButton).toBeVisible();
       
       // Test sign-in redirect

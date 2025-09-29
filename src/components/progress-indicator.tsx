@@ -24,7 +24,7 @@ export function ProgressIndicator({ steps, className }: ProgressIndicatorProps) 
             <div className="flex flex-col items-center">
               <div
                 className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
+                  'w-5 h-5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium',
                   step.completed
                     ? 'bg-green-600 text-white'
                     : step.current
@@ -34,17 +34,17 @@ export function ProgressIndicator({ steps, className }: ProgressIndicatorProps) 
               >
                 {step.completed ? '✓' : index + 1}
               </div>
-              <div className="mt-2 text-center">
-                <p className="text-sm font-medium text-gray-900">{step.title}</p>
+              <div className="mt-1 sm:mt-2 text-center">
+                <p className="text-xs sm:text-sm font-medium text-gray-900">{step.title}</p>
                 {step.description && (
-                  <p className="text-xs text-gray-500 mt-1">{step.description}</p>
+                  <p className="text-xs text-gray-500 mt-1 hidden sm:block">{step.description}</p>
                 )}
               </div>
             </div>
             {index < steps.length - 1 && (
               <div
                 className={cn(
-                  'flex-1 h-0.5 mx-4',
+                  'flex-1 h-0.5 mx-1 sm:mx-4',
                   steps[index + 1].completed || steps[index + 1].current
                     ? 'bg-green-600'
                     : 'bg-gray-200'

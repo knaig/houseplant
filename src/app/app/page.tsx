@@ -104,19 +104,63 @@ export default async function DashboardPage() {
       </header>
       
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        {/* Welcome Section / Plant Cards - Show first */}
+        {user.plants.length === 0 ? (
+          <div className="text-center py-8 mb-6">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">🌱</span>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Welcome to Your Plant Dashboard!</h3>
+            <div className="max-w-md mx-auto mb-6">
+              <p className="text-gray-600 mb-3">
+                You don't have any plants yet. Here's how to get started:
+              </p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-left">
+                <h4 className="font-semibold text-green-800 mb-2">🚀 Quick Start Guide:</h4>
+                <ol className="text-sm text-green-700 space-y-1">
+                  <li><strong>1. Get a QR sticker</strong> - Each plant pot comes with a unique QR code</li>
+                  <li><strong>2. Scan the QR code</strong> - Use your phone camera to scan it</li>
+                  <li><strong>3. Fill out the form</strong> - Tell us about your plant</li>
+                  <li><strong>4. Get reminders</strong> - Receive WhatsApp messages in your Plant Family group</li>
+                </ol>
+              </div>
+            </div>
+            <AddPlantButton 
+              currentCount={plantCount} 
+              maxPlants={maxPlants}
+              userPlan={user.subscription?.plan || 'FREE'}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {user.plants.map((plant) => (
+              <PlantCard 
+                key={plant.id} 
+                plant={plant} 
+              />
+            ))}
+          </div>
+        )}
+
+        {/* My Plant Family Section - Show after welcome/add plant */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Plant Family</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Plant Family</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-2">
               Your green friends are ready to send you personalized WhatsApp messages
             </p>
           </div>
           
-          <AddPlantButton 
-            currentCount={plantCount} 
-            maxPlants={maxPlants}
-            userPlan={user.subscription?.plan || 'FREE'}
-          />
+          {/* Only show Add Plant button if user has plants */}
+          {user.plants.length > 0 && (
+            <div className="flex justify-center sm:justify-end">
+              <AddPlantButton 
+                currentCount={plantCount} 
+                maxPlants={maxPlants}
+                userPlan={user.subscription?.plan || 'FREE'}
+              />
+            </div>
+          )}
         </div>
 
         {/* Plant Family Group Management */}
@@ -137,43 +181,6 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-        
-        {user.plants.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-4xl">🌱</span>
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">Welcome to Your Plant Dashboard!</h3>
-            <div className="max-w-md mx-auto mb-8">
-              <p className="text-gray-600 mb-4">
-                You don't have any plants yet. Here's how to get started:
-              </p>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
-                <h4 className="font-semibold text-green-800 mb-2">🚀 Quick Start Guide:</h4>
-                <ol className="text-sm text-green-700 space-y-1">
-                  <li><strong>1. Get a QR sticker</strong> - Each plant pot comes with a unique QR code</li>
-                  <li><strong>2. Scan the QR code</strong> - Use your phone camera to scan it</li>
-                  <li><strong>3. Fill out the form</strong> - Tell us about your plant</li>
-                  <li><strong>4. Get reminders</strong> - Receive WhatsApp messages in your Plant Family group</li>
-                </ol>
-              </div>
-            </div>
-            <AddPlantButton 
-              currentCount={plantCount} 
-              maxPlants={maxPlants}
-              userPlan={user.subscription?.plan || 'FREE'}
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {user.plants.map((plant) => (
-              <PlantCard 
-                key={plant.id} 
-                plant={plant} 
-              />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   )
