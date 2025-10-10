@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
           id: true,
           email: true,
           clerkId: true,
+          phoneE164: true,
           createdAt: true
         }
       })
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
             id: true,
             email: true,
             clerkId: true,
+            phoneE164: true,
             createdAt: true
           }
         })
@@ -130,7 +132,8 @@ export async function POST(request: NextRequest) {
       message: 'Plant creation successful', 
       user: user,
       plant: plant,
-      token: claimToken
+      token: claimToken,
+      userPhoneNumber: user.phoneE164
     }, { status: 200 })
     
   } catch (error) {

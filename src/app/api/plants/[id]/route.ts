@@ -15,7 +15,7 @@ const updatePlantSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authenticate user
@@ -24,7 +24,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const plantId = params.id;
+    const { id: plantId } = await params;
     if (!plantId) {
       return NextResponse.json({ error: 'Plant ID is required' }, { status: 400 });
     }
@@ -62,7 +62,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authenticate user
@@ -71,7 +71,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const plantId = params.id;
+    const { id: plantId } = await params;
     if (!plantId) {
       return NextResponse.json({ error: 'Plant ID is required' }, { status: 400 });
     }

@@ -144,13 +144,30 @@ export function ClaimPageContent({ token }: { token: string }) {
         throw new Error(errorMessage)
       }
       
-      const result = await response.json()
-      toast.success('🌱 Plant claimed successfully! You\'ll receive your first WhatsApp reminder soon.')
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = '/app'
-      }, 2000)
+               const result = await response.json()
+               toast.success('🌱 Plant claimed successfully! You\'ll receive your first WhatsApp reminder soon.')
+               
+               // Send WhatsApp QR scan message if user has phone number
+               if (result.userPhoneNumber) {
+                 try {
+                   await fetch('/api/whatsapp/qr-scan', {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                       phoneNumber: result.userPhoneNumber,
+                       plantName: formData.name
+                     })
+                   })
+                 } catch (error) {
+                   console.error('Failed to send WhatsApp QR scan message:', error)
+                   // Don't fail the claim process if WhatsApp message fails
+                 }
+               }
+               
+               // Redirect to dashboard
+               setTimeout(() => {
+                 window.location.href = '/app'
+               }, 2000)
       
     } catch (error) {
       console.error('Error claiming plant:', error)

@@ -6,7 +6,7 @@ import { inngest } from '@/lib/inngest';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
     const body = await request.json();
     const { message, plantIds, sendAsSystem = false } = body;
 
@@ -36,8 +36,11 @@ export async function POST(
         }
       },
       include: {
-        user: true,
-        plants: true
+        user: {
+          include: {
+            plants: true
+          }
+        }
       }
     });
 
@@ -51,7 +54,7 @@ export async function POST(
       where: {
         conversationId,
         createdAt: { gte: oneHourAgo },
-        content: { contains: '[BULK]' }
+        body: { contains: '[BULK]' }
       }
     });
 
@@ -77,7 +80,7 @@ export async function POST(
         await inngest.send({
           name: 'whatsapp/send.conversation.message',
           data: {
-            conversationSid: conversation.twilioConversationSid,
+            conversationSid: conversation.twilioSid,
             message: systemMessage,
             author: 'system',
             conversationId: conversation.id
@@ -87,15 +90,11 @@ export async function POST(
         // Log system message
         await db.message.create({
           data: {
-            content: `[BULK] ${message}`,
-            author: 'system',
-            conversationId: conversation.id,
-            messageType: 'text',
-            isInbound: false,
-            metadata: {
-              batchId,
-              sendAsSystem: true
-            }
+            userId: conversation.userId,
+            direction: 'OUTBOUND',
+            channel: 'WHATSAPP',
+            body: `[BULK] ${message}`,
+            conversationId: conversation.id
           }
         });
 
@@ -108,8 +107,8 @@ export async function POST(
     } else {
       // Send messages from selected plants
       const selectedPlants = plantIds 
-        ? conversation.plants.filter(plant => plantIds.includes(plant.id))
-        : conversation.plants;
+        ? conversation.user.plants.filter((plant: any) => plantIds.includes(plant.id))
+        : conversation.user.plants;
 
       if (selectedPlants.length === 0) {
         return NextResponse.json({ error: 'No plants selected' }, { status: 400 });
@@ -126,12 +125,12 @@ export async function POST(
         const plant = selectedPlants[i];
         
         try {
-          const plantMessage = `${plant.name} ${plant.personalityEmoji || '🌱'}: ${message}`;
+          const plantMessage = `${plant.name} 🌱: ${message}`;
           
           await inngest.send({
             name: 'whatsapp/send.conversation.message',
             data: {
-              conversationSid: conversation.twilioConversationSid,
+              conversationSid: conversation.twilioSid,
               message: plantMessage,
               author: `plant_${plant.id}`,
               conversationId: conversation.id
@@ -141,17 +140,12 @@ export async function POST(
           // Log plant message
           await db.message.create({
             data: {
-              content: `[BULK] ${message}`,
-              author: `plant_${plant.id}`,
-              conversationId: conversation.id,
-              messageType: 'text',
-              isInbound: false,
+              userId: conversation.userId,
               plantId: plant.id,
-              metadata: {
-                batchId,
-                plantName: plant.name,
-                plantEmoji: plant.personalityEmoji
-              }
+              direction: 'OUTBOUND',
+              channel: 'WHATSAPP',
+              body: `[BULK] ${message}`,
+              conversationId: conversation.id
             }
           });
 

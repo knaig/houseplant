@@ -5,7 +5,7 @@ import { inngest } from '@/lib/inngest';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authenticate user
@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const plantId = params.id;
+    const { id: plantId } = await params;
     if (!plantId) {
       return NextResponse.json({ error: 'Plant ID is required' }, { status: 400 });
     }

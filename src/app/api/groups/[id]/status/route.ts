@@ -5,7 +5,7 @@ import { getConversationService } from '@/lib/twilio';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
 
     // Validate user owns the conversation
     const conversation = await db.conversation.findFirst({
@@ -24,8 +24,11 @@ export async function GET(
         }
       },
       include: {
-        user: true,
-        plants: true
+        user: {
+          include: {
+            plants: true
+          }
+        }
       }
     });
 
@@ -85,12 +88,12 @@ export async function GET(
 
     let connectionStatus = 'connected';
     let isActive = true;
-    let participantCount = conversation.plants.length + 1; // +1 for user
+    let participantCount = conversation.user.plants.length + 1; // +1 for user
 
     // Check Twilio conversation status
     try {
       const conversationService = getConversationService();
-      const twilioConversation = await conversationService.conversations(conversation.twilioConversationSid).fetch();
+      const twilioConversation = await conversationService.conversations(conversation.twilioSid).fetch();
       
       if (twilioConversation.state === 'closed') {
         connectionStatus = 'disconnected';
@@ -102,7 +105,7 @@ export async function GET(
 
       // Get actual participant count from Twilio
       const participants = await conversationService
-        .conversations(conversation.twilioConversationSid)
+        .conversations(conversation.twilioSid)
         .participants
         .list();
       

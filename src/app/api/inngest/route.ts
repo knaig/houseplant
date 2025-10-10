@@ -3,6 +3,7 @@ import { inngest, events } from '@/lib/inngest'
 import { db } from '@/lib/db'
 import { sendWhatsApp, getOrCreateUserConversation, sendConversationMessage } from '@/lib/twilio'
 import { getPersonalityMessage } from '@/lib/personalities'
+import { sendWateringReminders, sendTestReminder } from '@/lib/jobs/watering-reminders'
 
 // Schedule reminder job
 export const scheduleReminder = inngest.createFunction(
@@ -288,5 +289,7 @@ export const { GET, POST, PUT } = serve({
     processFeedback,
     scheduleNextWatering,
     recalculateSchedule,
+    sendWateringReminders,
+    sendTestReminder,
   ],
 })

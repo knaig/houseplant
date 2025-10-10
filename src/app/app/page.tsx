@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { PlantCard } from '@/components/plant-card'
 import { AddPlantButton } from '@/components/add-plant-button'
 import { PlantFamilyGroup } from '@/components/plant-family-group'
+import { WhatsAppOptIn } from '@/components/whatsapp-optin'
 import { UserButton } from '@clerk/nextjs'
 import { MessageSquare } from 'lucide-react'
 
@@ -166,6 +167,14 @@ export default async function DashboardPage() {
         {/* Plant Family Group Management */}
         <div className="mb-8">
           <PlantFamilyGroup user={user} />
+        </div>
+
+        {/* WhatsApp Notifications */}
+        <div className="mb-8">
+          <WhatsAppOptIn 
+            currentPhoneNumber={user.phoneE164}
+            currentOptIn={user.whatsappOptIn}
+          />
         </div>
 
         {/* WhatsApp Message History Section - Coming Soon */}

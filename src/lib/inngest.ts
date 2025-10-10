@@ -33,4 +33,11 @@ export const events = {
       lastWateredAt: 'string', // ISO date string
     },
   },
+  'plant/schedule.recalculated': {
+    data: {
+      plantId: 'string',
+      userId: 'string',
+      reason: 'string',
+    },
+  },
 } as const
