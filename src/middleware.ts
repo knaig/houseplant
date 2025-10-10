@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/razorpay/webhook',
   '/api/stripe/webhook',
   '/api/twilio/inbound',
+  '/api/inngest(.*)', // Inngest endpoint must be public
   '/api/tokens/validate',
   '/api/plants/claim',
   '/api/species',

@@ -8,7 +8,7 @@ import { sendWateringReminders, sendTestReminder } from '@/lib/jobs/watering-rem
 // Schedule reminder job
 export const scheduleReminder = inngest.createFunction(
   { id: 'schedule-reminder' },
-  { event: events['plant/reminder.scheduled'] as any },
+  { event: 'plant/reminder.scheduled' },
   async ({ event }) => {
     const { plantId, scheduledFor } = event.data
     
@@ -28,7 +28,7 @@ export const scheduleReminder = inngest.createFunction(
 // Send reminder job
 export const sendReminder = inngest.createFunction(
   { id: 'send-reminder' },
-  { event: events['plant/reminder.send'] as any },
+  { event: 'plant/reminder.send' },
   async ({ event }) => {
     const { plantId, userId } = event.data
     
@@ -135,7 +135,7 @@ export const sendReminder = inngest.createFunction(
 // Process feedback job
 export const processFeedback = inngest.createFunction(
   { id: 'process-feedback' },
-  { event: events['plant/feedback.processed'] as any },
+  { event: 'plant/feedback.processed' },
   async ({ event }) => {
     const { plantId, feedback, confidence } = event.data
     
@@ -200,7 +200,7 @@ export const processFeedback = inngest.createFunction(
 // Schedule next watering job
 export const scheduleNextWatering = inngest.createFunction(
   { id: 'schedule-next-watering' },
-  { event: events['plant/water.schedule'] as any },
+  { event: 'plant/water.schedule' },
   async ({ event }) => {
     const { plantId, lastWateredAt } = event.data
     
@@ -241,7 +241,7 @@ export const scheduleNextWatering = inngest.createFunction(
 // Recalculate schedule job
 export const recalculateSchedule = inngest.createFunction(
   { id: 'recalculate-schedule' },
-  { event: events['plant/schedule.recalculated'] as any },
+  { event: 'plant/schedule.recalculated' },
   async ({ event }) => {
     const { plantId, userId, reason } = event.data
     
