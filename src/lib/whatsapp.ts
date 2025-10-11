@@ -93,15 +93,16 @@ export class WhatsAppService {
     }).join(', ')
 
     // Create message for AiSensy template
-    // TEMPORARY: Using watering_confirmation template for all messages since other templates don't exist yet
     const message: AiSensyMessage = {
       apiKey: this.apiKey,
-      campaignName: 'watering_confirmation', // Use working template
+      campaignName: 'watering_reminder', // Use proper watering reminder campaign
       destination: phoneNumber,
       userName: userName,
       templateParams: [
         userName,
-        `${plantList} - ${personalityStyle.header}` // Combine plant info with header
+        plantList,
+        personalityStyle.header,
+        personalityStyle.footer
       ]
     }
 
@@ -112,15 +113,15 @@ export class WhatsAppService {
    * Send QR code scan message (when user scans QR to claim plant)
    */
   async sendQRScanMessage(phoneNumber: string, plantName: string, userName: string = 'Plant Parent'): Promise<boolean> {
-    // TEMPORARY: Using watering_confirmation template since qr_scan_welcome doesn't exist yet
     const message: AiSensyMessage = {
       apiKey: this.apiKey,
-      campaignName: 'watering_confirmation', // Use working template
+      campaignName: 'qr_scan_welcome', // Use proper QR scan campaign
       destination: phoneNumber,
       userName: userName,
       templateParams: [
         userName,
-        `Welcome! You've claimed ${plantName}. Visit: ${process.env.NEXT_PUBLIC_APP_URL || 'https://your-domain.com'}`
+        plantName,
+        process.env.NEXT_PUBLIC_APP_URL || 'https://your-domain.com'
       ]
     }
 
@@ -131,15 +132,14 @@ export class WhatsAppService {
    * Send opt-in confirmation message
    */
   async sendOptInConfirmation(phoneNumber: string, userName: string = 'Plant Parent'): Promise<boolean> {
-    // TEMPORARY: Using watering_confirmation template since optin_confirmation doesn't exist yet
     const message: AiSensyMessage = {
       apiKey: this.apiKey,
-      campaignName: 'watering_confirmation', // Use working template
+      campaignName: 'optin_confirmation', // Use proper opt-in campaign
       destination: phoneNumber,
       userName: userName,
       templateParams: [
         userName,
-        `You're now subscribed to plant care reminders! Visit: ${process.env.NEXT_PUBLIC_APP_URL || 'https://your-domain.com'}`
+        process.env.NEXT_PUBLIC_APP_URL || 'https://your-domain.com'
       ]
     }
 
@@ -152,7 +152,7 @@ export class WhatsAppService {
   async sendWateringConfirmation(phoneNumber: string, plantName: string, userName: string = 'Plant Parent'): Promise<boolean> {
     const message: AiSensyMessage = {
       apiKey: this.apiKey,
-      campaignName: process.env.AISENSY_WATERING_CONFIRMATION_CAMPAIGN || 'watering_confirmation',
+      campaignName: 'watering_confirmation', // Use proper watering confirmation campaign
       destination: phoneNumber,
       userName: userName,
       templateParams: [
